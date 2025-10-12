@@ -3,6 +3,9 @@ const express = require("express")
 const connectDB  = require('./config/database')
 const User = require("./models/user")
 const app = express()
+const {validationSignup} = require("./utils/Validation")
+const bcrypt  = require("bcrypt")
+
 app.use(express.json())  //! adding middleware to read/update/push data in JSON
 
 const Port = 3000;
@@ -17,18 +20,55 @@ connectDB().then(()=>{
     console.log(err)
 })
 
+//* Validate signup before create
 app.post("/signup",async(req,res)=>{
-const user = new User(req.body)
+    
 
 try{
+    console.log("before validatioon")
+    //validationSignup(req)
+    console.log("validation passed")
+    //! hash the password
+    const {firstname,lastname,password,role,age} = req.body
+    const hashPassword = await bcrypt.hash(password,10)
+    console.log(hashPassword)
+    const user = new User({
+        firstname,lastname,role,age,password:hashPassword
+    })
     await user.save()
+    console.log("user saved data")
     res.send("data saved successfully")
 }
 catch(err){
-res.status(400).send("Data not added successfully")
+res.status(404).send("Data not added successfully",err.message)
 }
 
 })
+
+
+app.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Find user
+    const user = await User.findOne({ firstname: username });
+    if (!user) {
+      throw new Error("Invalid credential");
+    }
+
+    // Compare password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      throw new Error("Password is not correct");
+    }
+
+    res.status(200).json({ message: "Login successful" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+
 
 //* find  role using model.find() and use model.findOne()
 
