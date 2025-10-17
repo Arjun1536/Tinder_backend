@@ -68,9 +68,9 @@ app.post("/login", async (req, res) => {
     if (isValidPassword){
 
         //~ create a cookies using JSON Web token
-        const token = jwt.sign({_id: user._id}, "JSON_token_arjun")
+        const token = jwt.sign({_id: user._id}, "JSON_token_arjun",{expiresIn:"1d"})
         console.log(token)
-        res.cookie("token",token)
+        res.cookie("token",token,{expires: new Date (Date.now()+ 8*3600000)})  //^ setting cookies
   //~ set cookies    
   //res.cookie("JWT_token","qwqwqwqwwqwqwhghbbdfnsfsfksjfjkffskfesfvvnvdvb")
     res.status(200).json({ message: "Login successful" });
@@ -96,6 +96,18 @@ app.get("/profile",UserAuth, async(req,res)=>{
   
 })
 
+//! send connection request 
+app.post("/sendConnectionRequest",UserAuth, (req,res)=>{
+  try{
+    const user = req.user
+  res.send(user.firstname+" send you a connection request successfully")
+
+  }
+  catch(err){
+
+  res.status(404).send("error in sending request")
+  }
+})
 
 
 //* find  role using model.find() and use model.findOne()
