@@ -60,7 +60,8 @@ app.post("/login", async (req, res) => {
     }
 
     // Compare password
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    // const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = user.validateBcrypt(password) 
     if (!isValidPassword) {
       throw new Error("Password is not correct");
     }
@@ -68,8 +69,10 @@ app.post("/login", async (req, res) => {
     if (isValidPassword){
 
         //~ create a cookies using JSON Web token
-        const token = jwt.sign({_id: user._id}, "JSON_token_arjun",{expiresIn:"1d"})
-        console.log(token)
+        // const token = jwt.sign({_id: user._id}, "JSON_token_arjun",{expiresIn:"1d"})
+        // console.log(token)
+      const token = await user.getJWT()  // coming from userSchema model
+
         res.cookie("token",token,{expires: new Date (Date.now()+ 8*3600000)})  //^ setting cookies
   //~ set cookies    
   //res.cookie("JWT_token","qwqwqwqwwqwqwhghbbdfnsfsfksjfjkffskfesfvvnvdvb")
