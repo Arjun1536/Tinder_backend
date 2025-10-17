@@ -5,9 +5,12 @@ const User = require("./models/user")
 const app = express()
 const {validationSignup} = require("./utils/Validation")
 const bcrypt  = require("bcrypt")
+const cookies = require("cookie-parser")
+const jwt = require("jsonwebtoken")
+const {UserAuth} = require("./middleware/auth")
 
 app.use(express.json())  //! adding middleware to read/update/push data in JSON
-
+app.use(cookies())  //! cookes parser to read the cookies
 const Port = 3000;
 
 connectDB().then(()=>{
@@ -62,11 +65,36 @@ app.post("/login", async (req, res) => {
       throw new Error("Password is not correct");
     }
 
+    if (isValidPassword){
+
+        //~ create a cookies using JSON Web token
+        const token = jwt.sign({_id: user._id}, "JSON_token_arjun")
+        console.log(token)
+        res.cookie("token",token)
+  //~ set cookies    
+  //res.cookie("JWT_token","qwqwqwqwwqwqwhghbbdfnsfsfksjfjkffskfesfvvnvdvb")
     res.status(200).json({ message: "Login successful" });
+    }
+
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
+
+//! profile route to read cookies
+app.get("/profile",UserAuth, async(req,res)=>{
+
+  try{
+    const user = req.user
+    res.send(user)
+  }
+  catch(err){
+    res.status(400).send("user err"+ err.message)
+  }
+  
+
+  
+})
 
 
 
